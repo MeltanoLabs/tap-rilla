@@ -1,0 +1,49 @@
+version: 1
+default_environment: dev
+project_id: tap-rilla-test
+
+environments:
+- name: dev
+
+extractors:
+- name: tap-rilla
+  namespace: tap_rilla
+  pip_url: -e .
+  executable: tap-rilla
+  capabilities:
+  - catalog
+  - discover
+  - state
+  settings:
+  - name: api_key
+    label: API Key
+    kind: password
+    description: The API key to authenticate with the Rilla API
+  - name: start_date
+    label: Start Date
+    kind: date_iso8601
+    description: The earliest date from which to pull data (YYYY-MM-DD format)
+  - name: end_date
+    label: End Date
+    kind: date_iso8601
+    description: The latest date from which to pull data (YYYY-MM-DD format)
+  - name: users
+    label: Users
+    kind: array
+    description: Optional array of user email addresses to filter conversations. Only applies to conversations stream.
+  - name: date_type
+    label: Date Type
+    kind: options
+    description: Date type to filter by - timeOfRecording or processedDate. Defaults to timeOfRecording.
+    options:
+    - label: Time of Recording
+      value: timeOfRecording
+    - label: Processed Date
+      value: processedDate
+  config:
+    start_date: '2024-01-01'
+
+loaders:
+- name: target-jsonl
+  variant: andyh1203
+  pip_url: target-jsonl

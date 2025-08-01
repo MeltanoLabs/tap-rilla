@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tap-rilla"
+version = "0.1.0"
+description = "Singer tap for Rilla Voice API, built with the Meltano SDK for Singer Taps."
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["meltano", "singer", "tap", "rilla"]
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Your Name", email = "your@email.com"},
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "singer-sdk~=0.36.0",
+    "requests~=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.2.0",
+    "singer-sdk[testing]",
+]
+
+[project.scripts]
+tap-rilla = "tap_rilla.tap:TapRilla.cli"
