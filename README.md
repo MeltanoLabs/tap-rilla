@@ -7,7 +7,7 @@
 Install from source:
 
 ```bash
-pip install -e .
+uv tool install git+https://github.com/MeltanoLabs/tap-rilla.git
 ```
 
 ## Configuration
@@ -15,17 +15,18 @@ pip install -e .
 ### Required Settings
 
 - `api_key`: The API key to authenticate with the Rilla API
+- `start_date`: The earliest datetime from which to pull data (ISO 8601 format)
 
 ### Optional Settings
 
-- `start_date`: The earliest date from which to pull data (YYYY-MM-DD format)
-- `end_date`: The latest date from which to pull data (YYYY-MM-DD format). If not specified, defaults to today.
+- `end_date`: The latest datetime from which to pull data (ISO 8601 format). If not specified, defaults to the current date and time.
 - `users`: An optional array of user email addresses to filter conversations. Only applies to the conversations stream. If provided and not empty, only conversation data for those users will be returned. If not provided or empty, all conversation data is returned.
 - `date_type`: Date type to filter by. Options are `timeOfRecording` or `processedDate`. **Default: `timeOfRecording`**
 
 ### Configuration Examples
 
 Basic configuration:
+
 ```yaml
 api_key: your_api_key_here
 start_date: '2024-01-01'
@@ -33,15 +34,17 @@ end_date: '2024-12-31'
 ```
 
 Filter conversations for specific users:
+
 ```yaml
 api_key: your_api_key_here
 start_date: '2024-01-01'
 users:
-  - user1@company.com  
+  - user1@company.com
   - user2@company.com
 ```
 
 Use processed date instead of recording date:
+
 ```yaml
 api_key: your_api_key_here
 start_date: '2024-01-01'
@@ -55,13 +58,15 @@ A full list of supported settings and capabilities is available by running: `tap
 The tap extracts data from the following Rilla API endpoints:
 
 ### conversations
+
 - **Description**: Exports conversation data recorded during the specified time range
 - **Endpoint**: `POST /export/conversations`
 - **Supports user filtering**: Yes (via `users` config parameter)
 - **Pagination**: Yes (25 records per page)
 - **Primary Key**: `conversationId`
 
-### teams  
+### teams
+
 - **Description**: Exports team data and usage during the specified time range
 - **Endpoint**: `POST /export/teams`
 - **Supports user filtering**: No
@@ -69,7 +74,8 @@ The tap extracts data from the following Rilla API endpoints:
 - **Primary Key**: `id`
 
 ### users
-- **Description**: Exports user data and usage during the specified time range  
+
+- **Description**: Exports user data and usage during the specified time range
 - **Endpoint**: `POST /export/users`
 - **Supports user filtering**: No
 - **Pagination**: No
@@ -82,17 +88,20 @@ All streams support the `date_type` parameter with `timeOfRecording` as the defa
 You can easily run `tap-rilla` with the included `meltano.yml` project file.
 
 1. Create a `.env` file with your API key:
+
 ```bash
 TAP_RILLA_API_KEY=your_api_key_here
 ```
 
 2. Install Meltano and the tap:
+
 ```bash
-pip install meltano
+uv tool install meltano
 meltano install
 ```
 
 3. Test the tap:
+
 ```bash
 meltano run tap-rilla target-jsonl
 ```
@@ -110,7 +119,7 @@ tap-rilla --config CONFIG --discover > ./catalog.json
 ### Initialize your Development Environment
 
 ```bash
-pip install -e ".[dev]"
+uv sync
 ```
 
 ### Testing with Meltano
