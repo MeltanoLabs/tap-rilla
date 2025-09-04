@@ -216,6 +216,11 @@ class TeamsStream(RillaStream):
             description="The number of comments received",
         ),
         th.Property(
+            "commentsReceivedRead",
+            th.NumberType,
+            description="The number of comments that were left on the user’s conversations that the user read",
+        ),
+        th.Property(
             "conversationsViewed",
             th.NumberType,
             description="The number of conversations viewed",
@@ -360,6 +365,11 @@ class UsersStream(RillaStream):
             "conversationsRecorded",
             th.NumberType,
             description="The number of conversations recorded",
+        ),
+        th.Property(
+            "viewedRecordedRatio",
+            th.NumberType,
+            description="The ratio of conversations viewed to conversations recorded",
         ),
         th.Property(
             "conversationsViewed",
