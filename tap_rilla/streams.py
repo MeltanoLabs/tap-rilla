@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import sys
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
@@ -25,8 +26,6 @@ else:
     from typing_extensions import override
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     import requests
     from singer_sdk.helpers.types import Context
 
@@ -34,16 +33,14 @@ if TYPE_CHECKING:
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
-def _get_date_range(config: Mapping[str, Any]) -> tuple[str, str]:
+@functools.cache
+def _get_date_range(*, start_date: str, end_date: str | None) -> tuple[str, str]:
     """Get the date range from the config."""
-    start_date = datetime.fromisoformat(config["start_date"])
-    if "end_date" in config:
-        end_date = datetime.fromisoformat(config["end_date"])
-    else:
-        end_date = datetime.now(timezone.utc)
+    start_date_val = datetime.fromisoformat(start_date)
+    end_date_val = datetime.fromisoformat(end_date) if end_date is not None else datetime.now(timezone.utc)
 
     # Use ISO 8601 format for dates
-    return start_date.strftime(DATETIME_FORMAT), end_date.strftime(DATETIME_FORMAT)
+    return start_date_val.strftime(DATETIME_FORMAT), end_date_val.strftime(DATETIME_FORMAT)
 
 
 class RillaPageNumberPaginator(BasePageNumberPaginator):
@@ -55,9 +52,7 @@ class RillaPageNumberPaginator(BasePageNumberPaginator):
         data = response.json()
         current_page: int = data.get("currentPage", 1)
         total_pages: int = data.get("totalPages", 1)
-        if current_page < total_pages:
-            return current_page + 1
-        return None
+        return current_page + 1 if current_page < total_pages else None
 
 
 class ConversationsStream(RillaStream):
@@ -86,7 +81,30 @@ class ConversationsStream(RillaStream):
             ),
             description="User information",
         ),
-        th.Property("checklists", th.ArrayType(th.ObjectType()), description="Checklist data"),
+        th.Property(
+            "checklists",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("name", th.StringType, description="The name of the conversation"),
+                    th.Property("score", th.NumberType, description="The score for the conversation"),
+                    th.Property(
+                        "denominator", th.NumberType, description="The maximum score the conversation can score"
+                    ),
+                    th.Property(
+                        "trackerData",
+                        th.ArrayType(
+                            th.ObjectType(
+                                th.Property("name", th.StringType, description="Name of the tracker"),
+                                th.Property("isHit", th.BooleanType, description="Was the tracker hit"),
+                                th.Property("aiScore", th.NumberType, description="The score for the tracker"),
+                            ),
+                        ),
+                        description="The individual trackers associated with current checklist",
+                    ),
+                )
+            ),
+            description="The latest checklist(s) generated for the conversation",
+        ),
         th.Property("rillaUrl", th.StringType, description="Rilla conversation URL"),
         th.Property("audioUrl", th.StringType, description="Audio file URL"),
         th.Property("transcriptUrl", th.StringType, description="Transcript URL"),
@@ -116,7 +134,10 @@ class ConversationsStream(RillaStream):
         """Prepare the data payload for the request."""
         payload: dict[str, Any] = {}
 
-        start_date, end_date = _get_date_range(self.config)
+        start_date, end_date = _get_date_range(
+            start_date=self.config["start_date"],
+            end_date=self.config.get("end_date"),
+        )
         payload["toDate"] = end_date
         payload["fromDate"] = start_date
 
@@ -203,8 +224,7 @@ class TeamsStream(RillaStream):
             "conversationsRecorded",
             th.NumberType,
             description=(
-                "The total number of conversations recorded by users on the team during "
-                "the requested time range"
+                "The total number of conversations recorded by users on the team during the requested time range"
             ),
         ),
         th.Property(
@@ -226,8 +246,7 @@ class TeamsStream(RillaStream):
             "recordingCompliance",
             th.NumberType,
             description=(
-                "The recording compliance for the team (number of appointments recorded / "
-                "total number of appointments)"
+                "The recording compliance for the team (number of appointments recorded / total number of appointments)"
             ),
         ),
         th.Property(
@@ -257,7 +276,10 @@ class TeamsStream(RillaStream):
         """Prepare the data payload for the request."""
         payload: dict[str, Any] = {}
 
-        start_date, end_date = _get_date_range(self.config)
+        start_date, end_date = _get_date_range(
+            start_date=self.config["start_date"],
+            end_date=self.config.get("end_date"),
+        )
         payload["fromDate"] = start_date
         payload["toDate"] = end_date
 
@@ -284,10 +306,7 @@ class UsersStream(RillaStream):
         th.Property(
             "isRemoved",
             th.BooleanType,
-            description=(
-                "Flag indicating whether the user has been deleted (true) "
-                "or is still active (false)"
-            ),
+            description="Flag indicating whether the user has been deleted (true) or is still active (false)",
         ),
         th.Property("role", th.StringType, description="The user's role within Rilla"),
         th.Property(
@@ -319,9 +338,7 @@ class UsersStream(RillaStream):
         th.Property(
             "averageConversationLength",
             th.NumberType,
-            description=(
-                "The average duration of the talking that occurs during the conversations recorded"
-            ),
+            description="The average duration of the talking that occurs during the conversations recorded",
         ),
         th.Property(
             "clipViewDuration",
@@ -336,10 +353,7 @@ class UsersStream(RillaStream):
         th.Property(
             "commentsReceivedRead",
             th.NumberType,
-            description=(
-                "The number of comments that were left on the user's conversations "
-                "that the user read"
-            ),
+            description="The number of comments that were left on the user's conversations that the user read",
         ),
         th.Property("commentsGiven", th.NumberType, description="The number of comments given"),
         th.Property(
@@ -398,7 +412,10 @@ class UsersStream(RillaStream):
         """Prepare the data payload for the request."""
         payload: dict[str, Any] = {}
 
-        start_date, end_date = _get_date_range(self.config)
+        start_date, end_date = _get_date_range(
+            start_date=self.config["start_date"],
+            end_date=self.config.get("end_date"),
+        )
         payload["fromDate"] = start_date
         payload["toDate"] = end_date
 
