@@ -28,10 +28,7 @@ class RillaStream(RESTStream):
     @override
     def authenticator(self) -> SimpleAuthenticator:
         """An authenticator object for the stream."""
-        return SimpleAuthenticator(
-            stream=self,
-            auth_headers={"Authorization": self.config["api_key"]},
-        )
+        return SimpleAuthenticator(auth_headers={"Authorization": self.config["api_key"]})
 
     @property
     @override
