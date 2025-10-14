@@ -123,6 +123,7 @@ class ConversationsStream(RillaStream):
             description="Longest customer monologue",
         ),
         th.Property("totalComments", th.IntegerType, description="Total comments"),
+        th.Property("customSummary", th.StringType, description="Custom summary for the conversation"),
     ).to_dict()
 
     @override
@@ -218,7 +219,7 @@ class TeamsStream(RillaStream):
         th.Property(
             "commentsReceivedRead",
             th.NumberType,
-            description="The number of comments that were left on the user’s conversations that the user read",
+            description="The number of comments that were left on the user's conversations that the user read",
         ),
         th.Property(
             "conversationsViewed",

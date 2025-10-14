@@ -54,10 +54,7 @@ class RillaStream(RESTStream):
             http.HTTPStatus.UNAUTHORIZED,
             http.HTTPStatus.FORBIDDEN,
         }:
-            msg = (
-                f"{response.status_code} Client Error: Authorization failed. "
-                "Please check your API key."
-            )
+            msg = f"{response.status_code} Client Error: Authorization failed. Please check your API key."
             raise FatalAPIError(msg)
 
         super().validate_response(response)
