@@ -178,6 +178,11 @@ class TeamsStream(RillaStream):
         th.Property("teamId", th.StringType, description="Unique ID for the team"),
         th.Property("name", th.StringType, description="The name of the team"),
         th.Property(
+            "externalTeamId",
+            th.StringType,
+            description="A unique ID from your system you provided to Rilla",
+        ),
+        th.Property(
             "parentTeamId",
             th.StringType,
             description="The unique ID of the parent team (if applies)",
@@ -271,6 +276,12 @@ class TeamsStream(RillaStream):
             th.NumberType,
             description="The total number of appointments for users on the team",
         ),
+        th.Property("longestMonologueAverage", th.NumberType, description="Average longest monologue"),
+        th.Property("longestCustomerMonologueAverage", th.NumberType, description="Average longest customer monologue"),
+        th.Property("clipCommentsGiven", th.NumberType, description="Number of clip comments given"),
+        th.Property("clipsCreated", th.NumberType, description="Number of clips created"),
+        th.Property("totalUsers", th.NumberType, description="Total number of users"),
+        th.Property("totalUsersWhoRecorded", th.NumberType, description="Total number of users who recorded"),
     ).to_dict()
 
     @override
@@ -382,6 +393,7 @@ class UsersStream(RillaStream):
             th.NumberType,
             description="The total amount of time viewing conversations",
         ),
+        th.Property("timeOfFirstRecording", th.DateTimeType, description="Time of first recording"),
         th.Property(
             "patienceAverage",
             th.NumberType,
@@ -412,6 +424,17 @@ class UsersStream(RillaStream):
             th.NumberType,
             description="The total number of appointments the user had",
         ),
+        th.Property("commentsRead", th.NumberType, description="Number of comments read"),
+        th.Property("longestMonologueAverage", th.NumberType, description="Average longest monologue"),
+        th.Property("longestCustomerMonologueAverage", th.NumberType, description="Average longest customer monologue"),
+        th.Property("clipCommentsGiven", th.NumberType, description="Number of clip comments given"),
+        th.Property("clipsCreated", th.NumberType, description="Number of clips created"),
+        th.Property("totalRidealongsCompleted", th.NumberType, description="Total number of ridealongs completed"),
+        th.Property("averageTimePerRidealong", th.NumberType, description="Average time per ridealong"),
+        th.Property("totalEndOfRidealongsReached", th.NumberType, description="Total number of end of ridealongs reached"),
+        th.Property("lastRidealongAt", th.DateTimeType, description="Time of last ridealong"),
+        th.Property("percentageOfRepsWithCommentsGiven", th.NumberType, description="Percentage of reps with comments given"),
+        th.Property("averageScriptCompliance", th.NumberType, description="Average script compliance"),
     ).to_dict()
 
     @override
