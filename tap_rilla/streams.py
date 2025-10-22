@@ -124,9 +124,34 @@ class ConversationsStream(RillaStream):
         ),
         th.Property("totalComments", th.IntegerType, description="Total comments"),
         th.Property("customSummary", th.StringType, description="Custom summary for the conversation"),
-        th.Property("totalViews", th.IntegerType, description="Total views"),
-        th.Property("totalViewTimeMs", th.IntegerType, description="Total view time"),
-        th.Property("viewerNames", th.ArrayType(th.StringType), description="Viewer names"),
+        th.Property(
+            "viewers",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property(
+                        "userId",
+                        th.StringType,
+                        description="The user ID of the viewer",
+                    ),
+                    th.Property(
+                        "name",
+                        th.StringType,
+                        description="The viewer's name",
+                    ),
+                    th.Property(
+                        "viewCount",
+                        th.IntegerType,
+                        description="The number of times this viewer has viewed this conversation",
+                    ),
+                    th.Property(
+                        "totalViewTimeMs",
+                        th.IntegerType,
+                        description="The total time this viewer has spent viewing this conversation in milliseconds",
+                    ),
+                )
+            ),
+            description="The list of viewers for this conversation",
+        ),
     ).to_dict()
 
     @override
