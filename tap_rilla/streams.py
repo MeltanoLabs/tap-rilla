@@ -124,6 +124,9 @@ class ConversationsStream(RillaStream):
         ),
         th.Property("totalComments", th.IntegerType, description="Total comments"),
         th.Property("customSummary", th.StringType, description="Custom summary for the conversation"),
+        th.Property("totalViews", th.IntegerType, description="Total views"),
+        th.Property("totalViewTimeMs", th.IntegerType, description="Total view time"),
+        th.Property("viewerNames", th.ArrayType(th.StringType), description="Viewer names"),
     ).to_dict()
 
     @override
@@ -431,9 +434,17 @@ class UsersStream(RillaStream):
         th.Property("clipsCreated", th.NumberType, description="Number of clips created"),
         th.Property("totalRidealongsCompleted", th.NumberType, description="Total number of ridealongs completed"),
         th.Property("averageTimePerRidealong", th.NumberType, description="Average time per ridealong"),
-        th.Property("totalEndOfRidealongsReached", th.NumberType, description="Total number of end of ridealongs reached"),
+        th.Property(
+            "totalEndOfRidealongsReached",
+            th.NumberType,
+            description="Total number of end of ridealongs reached",
+        ),
         th.Property("lastRidealongAt", th.DateTimeType, description="Time of last ridealong"),
-        th.Property("percentageOfRepsWithCommentsGiven", th.NumberType, description="Percentage of reps with comments given"),
+        th.Property(
+            "percentageOfRepsWithCommentsGiven",
+            th.NumberType,
+            description="Percentage of reps with comments given",
+        ),
         th.Property("averageScriptCompliance", th.NumberType, description="Average script compliance"),
     ).to_dict()
 
