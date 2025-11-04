@@ -58,7 +58,7 @@ class RillaStream(RESTStream):
             raise FatalAPIError(msg)
 
         super().validate_response(response)
-    
+
     def backoff_max_tries(self) -> int:  # noqa: PLR6301
         """The number of attempts before giving up when retrying requests. We had issues with 5 retries, so we're increasing to 10.
 

@@ -309,7 +309,11 @@ class TeamsStream(RillaStream):
         th.Property("clipCommentsGiven", th.NumberType, description="Number of clip comments given"),
         th.Property("clipsCreated", th.NumberType, description="Number of clips created"),
         th.Property("totalUsers", th.NumberType, description="Total number of users"),
-        th.Property("totalUsersWhoRecorded", th.NumberType, description="Total number of users who recorded"),
+        th.Property(
+            "totalUsersWhoRecorded",
+            th.NumberType,
+            description="Total number of users who recorded",
+        ),
     ).to_dict()
 
     @override
@@ -471,6 +475,16 @@ class UsersStream(RillaStream):
             description="Percentage of reps with comments given",
         ),
         th.Property("averageScriptCompliance", th.NumberType, description="Average script compliance"),
+        th.Property(
+            "accountSetUp",
+            th.BooleanType,
+            description="Flag indicating whether the user has finished the account onboarding",
+        ),
+        th.Property(
+            "hasVoiceId",
+            th.BooleanType,
+            description="Flag indicating whether the user has a valid voiceId stored",
+        ),
     ).to_dict()
 
     @override
