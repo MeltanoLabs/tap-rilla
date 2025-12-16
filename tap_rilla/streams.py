@@ -411,6 +411,11 @@ class UsersStream(RillaStream):
             description="The number of conversations recorded",
         ),
         th.Property(
+            "conversationsCommentedOn",
+            th.NumberType,
+            description="The unique number of conversations commented on",
+        ),
+        th.Property(
             "viewedRecordedRatio",
             th.NumberType,
             description="The ratio of conversations viewed to conversations recorded",
