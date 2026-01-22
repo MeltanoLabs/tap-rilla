@@ -59,8 +59,11 @@ class RillaStream(RESTStream):
 
         super().validate_response(response)
 
-    def backoff_max_tries(self) -> int:  # noqa: PLR6301
-        """The number of attempts before giving up when retrying requests. We had issues with 5 retries, so we're increasing to 10.
+    @override
+    def backoff_max_tries(self) -> int:
+        """The number of attempts before giving up when retrying requests.
+
+        We had issues with 5 retries, so we're increasing to 10.
 
         Returns:
             Number of max retries.
