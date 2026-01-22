@@ -243,6 +243,11 @@ class TeamsStream(RillaStream):
         ),
         th.Property("clipViewDuration", th.NumberType, description="Clip view duration"),
         th.Property("commentsGiven", th.NumberType, description="The number of comments written"),
+        th.Property(
+            "conversationsCommentedOn",
+            th.NumberType,
+            description="The unique number of conversations commented on",
+        ),
         th.Property("commentsRead", th.NumberType, description="The number of comments read"),
         th.Property(
             "commentsReceived",
