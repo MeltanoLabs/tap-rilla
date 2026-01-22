@@ -1,10 +1,13 @@
 [build-system]
-requires = ["hatchling"]
+requires = [
+    "hatchling>=1,<2",
+    "hatch-vcs",
+]
 build-backend = "hatchling.build"
 
 [project]
 name = "tap-rilla"
-version = "0.1.0"
+dynamic = [ "version" ]
 description = "Singer tap for Rilla Voice API, built with the Meltano SDK for Singer Taps"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -50,6 +53,10 @@ typing = [
     "ty>=0.0.1a16",
     "types-requests>=2.32.0",
 ]
+
+[tool.hatch.version]
+fallback-version = "0.0.0.dev0"
+source = "vcs"
 
 [tool.mypy]
 enable_error_code = [
