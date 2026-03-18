@@ -152,6 +152,14 @@ class ConversationsStream(RillaStream):
             ),
             description="The list of viewers for this conversation",
         ),
+        th.Property(
+            "customFields",
+            th.ObjectType(),
+            description=(
+                "Custom fields are associated with the conversation's calendar event. The keys and values are "
+                "customer-defined and vary by organizations."
+            ),
+        ),
     ).to_dict()
 
     @override
