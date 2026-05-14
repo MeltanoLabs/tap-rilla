@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from singer_sdk import typing as th
-from singer_sdk.pagination import BasePageNumberPaginator
+from singer_sdk.pagination import PageNumberPaginator
 
 from tap_rilla.client import RillaStream
 
@@ -43,7 +43,7 @@ def _get_date_range(*, start_date: str, end_date: str | None) -> tuple[str, str]
     return start_date_val.strftime(DATETIME_FORMAT), end_date_val.strftime(DATETIME_FORMAT)
 
 
-class RillaPageNumberPaginator(BasePageNumberPaginator):
+class RillaPageNumberPaginator(PageNumberPaginator):
     """Paginator for the Rilla conversations stream."""
 
     @override
