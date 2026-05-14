@@ -327,6 +327,7 @@ class TeamsStream(RillaStream):
             th.NumberType,
             description="Total number of users who recorded",
         ),
+        th.Property("ridealongsReceived", th.BooleanType),
     ).to_dict()
 
     @override
@@ -503,6 +504,8 @@ class UsersStream(RillaStream):
             th.BooleanType,
             description="Flag indicating whether the user has a valid voiceId stored",
         ),
+        th.Property("ridealongsReceived", th.BooleanType),
+        th.Property("liveCoaching", th.BooleanType),
     ).to_dict()
 
     @override
