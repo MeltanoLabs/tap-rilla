@@ -7,8 +7,12 @@ import sys
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
+import requests
+from requests.adapters import HTTPAdapter
+from singer_sdk import Stream
 from singer_sdk import typing as th
 from singer_sdk.pagination import PageNumberPaginator
+from urllib3.util import Retry
 
 from tap_rilla.client import RillaStream
 
@@ -26,7 +30,8 @@ else:
     from typing_extensions import override
 
 if TYPE_CHECKING:
-    import requests
+    from collections.abc import Iterable
+
     from singer_sdk.helpers.types import Context
 
 
@@ -198,6 +203,96 @@ class ConversationsStream(RillaStream):
     def get_new_paginator(self) -> RillaPageNumberPaginator:
         """Return a new paginator for the next page."""
         return RillaPageNumberPaginator(start_value=1)
+
+    @override
+    def get_child_context(self, record: dict, context: Context | None) -> dict:
+        """Return context for child transcripts stream."""
+        return {
+            "conversation_id": record["conversationId"],
+            "transcript_url": record.get("transcriptUrl"),
+        }
+
+
+class TranscriptsStream(Stream):
+    """Child stream that fetches full transcript text for each conversation from its S3 URL.
+
+    The transcriptUrl on each conversation is a presigned S3 URL that expires 6 hours
+    after the transcript is created, so transcripts must be fetched during the same sync.
+    """
+
+    name = "transcripts"
+    primary_keys = ("conversation_id", "turn_index")
+    replication_key = None
+    parent_stream_type = ConversationsStream
+    ignore_parent_replication_key = True
+
+    schema = th.PropertiesList(
+        th.Property("conversation_id", th.StringType, description="The parent conversation ID"),
+        th.Property("turn_index", th.IntegerType, description="Zero-based index of this speaker turn"),
+        th.Property("speaker", th.StringType, description="Speaker label (e.g. 'Associate', 'Shopper 1')"),
+        th.Property(
+            "words",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("word", th.StringType, description="The spoken word"),
+                    th.Property("start_time", th.NumberType, description="Start time of word in seconds"),
+                    th.Property("end_time", th.NumberType, description="End time of word in seconds"),
+                    th.Property("confidence", th.NumberType, description="ASR confidence score (0.0-1.0)"),
+                )
+            ),
+            description="Words spoken in this turn with timing and confidence",
+        ),
+    ).to_dict()
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initiliaze the stream."""
+        super().__init__(*args, **kwargs)
+        self._session = requests.Session()
+        retries = Retry(backoff_factor=0.1)
+        self._session.mount("https://", HTTPAdapter(max_retries=retries))
+
+    def get_records(self, context: Context | None) -> Iterable[dict]:
+        """Fetch transcript from S3 URL and yield one record per speaker turn."""
+        if context is None:
+            return
+
+        conversation_id = context["conversation_id"]
+        transcript_url = context.get("transcript_url")
+
+        if not transcript_url:
+            self.logger.info(
+                "Skipping transcript for conversation %s: transcript_url is missing or null",
+                conversation_id,
+            )
+            return
+
+        try:
+            response = self._session.get(transcript_url, timeout=30)
+            response.raise_for_status()
+            turns = response.json()
+        except requests.HTTPError as exc:
+            self.logger.warning(
+                "Skipping transcript for conversation %s: HTTP %s - %s",
+                conversation_id,
+                exc.response.status_code if exc.response else "Unknown Status",
+                exc.response.text[:500] if exc.response else "Unkown Cause",
+            )
+            return
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning(
+                "Skipping transcript for conversation %s: %s",
+                conversation_id,
+                exc,
+            )
+            return
+
+        for turn_index, turn in enumerate(turns):
+            yield {
+                "conversation_id": conversation_id,
+                "turn_index": turn_index,
+                "speaker": turn.get("speaker"),
+                "words": turn.get("words", []),
+            }
 
 
 class TeamsStream(RillaStream):
