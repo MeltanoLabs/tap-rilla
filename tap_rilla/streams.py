@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import functools
 import sys
-from collections.abc import Iterable
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 import requests
-from singer_sdk import Stream, typing as th
+from singer_sdk import Stream
+from singer_sdk import typing as th
 from singer_sdk.pagination import PageNumberPaginator
 
 from tap_rilla.client import RillaStream
@@ -28,6 +28,8 @@ else:
     from typing_extensions import override
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from singer_sdk.helpers.types import Context
 
 
@@ -200,6 +202,7 @@ class ConversationsStream(RillaStream):
         """Return a new paginator for the next page."""
         return RillaPageNumberPaginator(start_value=1)
 
+    @override
     def get_child_context(self, record: dict, context: Context | None) -> dict:
         """Return context for child transcripts stream."""
         return {
@@ -232,7 +235,7 @@ class TranscriptsStream(Stream):
                     th.Property("word", th.StringType, description="The spoken word"),
                     th.Property("start_time", th.NumberType, description="Start time of word in seconds"),
                     th.Property("end_time", th.NumberType, description="End time of word in seconds"),
-                    th.Property("confidence", th.NumberType, description="ASR confidence score (0.0–1.0)"),
+                    th.Property("confidence", th.NumberType, description="ASR confidence score (0.0-1.0)"),
                 )
             ),
             description="Words spoken in this turn with timing and confidence",
@@ -262,11 +265,11 @@ class TranscriptsStream(Stream):
             self.logger.warning(
                 "Skipping transcript for conversation %s: HTTP %s - %s",
                 conversation_id,
-                exc.response.status_code,
-                exc.response.text[:500],
+                exc.response.status_code if exc.response else "Unknown Status",
+                exc.response.text[:500] if exc.response else "Unkown Cause",
             )
             return
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             self.logger.warning(
                 "Skipping transcript for conversation %s: %s",
                 conversation_id,
