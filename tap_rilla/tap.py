@@ -72,6 +72,7 @@ class TapRilla(Tap):
         """Return a list of discovered streams."""
         return [
             streams.ConversationsStream(tap=self),
+            streams.TranscriptsStream(tap=self),
             streams.TeamsStream(tap=self),
             streams.UsersStream(tap=self),
         ]
