@@ -8,9 +8,11 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 import requests
+from requests.adapters import HTTPAdapter
 from singer_sdk import Stream
 from singer_sdk import typing as th
 from singer_sdk.pagination import PageNumberPaginator
+from urllib3.util import Retry
 
 from tap_rilla.client import RillaStream
 
@@ -242,6 +244,13 @@ class TranscriptsStream(Stream):
         ),
     ).to_dict()
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initiliaze the stream."""
+        super().__init__(*args, **kwargs)
+        self._session = requests.Session()
+        retries = Retry(backoff_factor=0.1)
+        self._session.mount("https://", HTTPAdapter(max_retries=retries))
+
     def get_records(self, context: Context | None) -> Iterable[dict]:
         """Fetch transcript from S3 URL and yield one record per speaker turn."""
         if context is None:
@@ -258,7 +267,7 @@ class TranscriptsStream(Stream):
             return
 
         try:
-            response = requests.get(transcript_url, timeout=30)
+            response = self._session.get(transcript_url, timeout=30)
             response.raise_for_status()
             turns = response.json()
         except requests.HTTPError as exc:
