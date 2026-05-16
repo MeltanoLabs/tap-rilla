@@ -66,7 +66,7 @@ class ConversationsStream(RillaStream):
     name = "conversations"
     path = "/export/conversations"
     primary_keys = ("conversationId",)
-    replication_key = None
+    replication_key = "processedDate"
     records_jsonpath = "$.conversations[*]"
     http_method = HTTPMethod.POST
 
@@ -176,27 +176,26 @@ class ConversationsStream(RillaStream):
         """Prepare the data payload for the request."""
         payload: dict[str, Any] = {}
 
-        start_date, end_date = _get_date_range(
-            start_date=self.config["start_date"],
-            end_date=self.config.get("end_date"),
-        )
-        payload["toDate"] = end_date
-        payload["fromDate"] = start_date
+        from_date = self.get_starting_timestamp(context)
+        if from_date is None:
+            from_date = datetime.fromisoformat(self.config["start_date"])
+            if from_date.tzinfo is None:
+                from_date = from_date.replace(tzinfo=timezone.utc)
 
-        # Handle pagination
+        end_date_str = self.config.get("end_date")
+        end_date = datetime.fromisoformat(end_date_str) if end_date_str is not None else datetime.now(timezone.utc)
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
+
+        payload["fromDate"] = from_date.strftime(DATETIME_FORMAT)
+        payload["toDate"] = end_date.strftime(DATETIME_FORMAT)
+        payload["dateType"] = "processedDate"
         payload["page"] = next_page_token or 1
+        payload["limit"] = 50
 
-        # Set limit to maximum allowed
-        payload["limit"] = 25
-
-        # Set dateType with default
-        payload["dateType"] = self.config.get("date_type", "timeOfRecording")
-
-        # Optional fields
         if self.config.get("users"):
             payload["users"] = self.config.get("users")
 
-        self.logger.info("Request payload: %s", payload)
         return payload
 
     @override
@@ -275,7 +274,7 @@ class TranscriptsStream(Stream):
                 "Skipping transcript for conversation %s: HTTP %s - %s",
                 conversation_id,
                 exc.response.status_code if exc.response else "Unknown Status",
-                exc.response.text[:500] if exc.response else "Unkown Cause",
+                exc.response.text[:500] if exc.response else "Unknown Cause",
             )
             return
         except Exception as exc:  # noqa: BLE001
