@@ -58,7 +58,8 @@ class TapRilla(Tap):
             th.StringType,
             description=(
                 "Date type to filter by: 'timeOfRecording' or 'processedDate'. Defaults "
-                "to 'timeOfRecording' if not specified."
+                "to 'timeOfRecording' if not specified. Applies to the teams and users "
+                "streams only; conversations always filters by 'processedDate'."
             ),
             allowed_values=[
                 "timeOfRecording",

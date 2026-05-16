@@ -14,27 +14,31 @@ plugins:
     capabilities:
     - catalog
     - discover
+    - schema-flattening
     - state
+    - stream-maps
+    - structured-logging
     settings:
     - name: api_key
-      label: API Key
       kind: password
+      label: API Key
       description: The API key to authenticate with the Rilla API
+      sensitive: true
     - name: start_date
-      label: Start Date
       kind: date_iso8601
+      label: Start Date
       description: The earliest datetime from which to pull data (ISO 8601 format)
     - name: end_date
-      label: End Date
       kind: date_iso8601
+      label: End Date
       description: The latest datetime from which to pull data (ISO 8601 format)
     - name: users
-      label: Users
       kind: array
+      label: Users
       description: Optional array of user email addresses to filter conversations. Only applies to conversations stream.
     - name: date_type
-      label: Date Type
       kind: options
+      label: Date Type
       description: Date type to filter by - timeOfRecording or processedDate. Defaults to timeOfRecording.
       options:
       - label: Time of Recording
@@ -48,3 +52,6 @@ plugins:
   - name: target-jsonl
     variant: andyh1203
     pip_url: target-jsonl
+  - name: target-duckdb
+    variant: meltanolabs
+    pip_url: git+https://github.com/MeltanoLabs/target-duckdb.git
